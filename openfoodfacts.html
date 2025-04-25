@@ -207,7 +207,7 @@
       label: function () {
         return this.name || 'OpenFoodFacts Get Product';
       },
-      paletteLabel: "OpenFoodFacts Get Product"
+      paletteLabel: "Get Product"
     });
 
     RED.nodes.registerType('openfoodfacts-search-products', {
@@ -232,7 +232,7 @@
       label: function () {
         return this.name || 'OpenFoodFacts Search Products';
       },
-      paletteLabel: "OpenFoodFacts Search Products",
+      paletteLabel: "Search Products",
       oneditprepare: function () {
         $('#node-input-searchParams').val(
           typeof this.searchParams === 'object'
@@ -262,7 +262,7 @@
       label: function () {
         return this.name || 'OpenFoodFacts Get Taxonomy';
       },
-      paletteLabel: "OpenFoodFacts Get Taxonomy"
+      paletteLabel: "Get Taxonomy"
     });
 
     // Add Product Node
@@ -282,7 +282,7 @@
       label: function () {
         return this.name || "OpenFoodFacts Add Product";
       },
-      paletteLabel: "OpenFoodFacts Add Product"
+      paletteLabel: "Add Product"
     });
 
     // Upload Photo Node
@@ -302,7 +302,7 @@
       label: function () {
         return this.name || "OpenFoodFacts Upload Photo";
       },
-      paletteLabel: "OpenFoodFacts Upload Photo"
+      paletteLabel: "Upload Photo"
     });
 
     // Get Additives Node
@@ -318,7 +318,7 @@
       label: function () {
         return this.name || "OpenFoodFacts Get Additives";
       },
-      paletteLabel: "OpenFoodFacts Get Additives"
+      paletteLabel: "Get Additives"
     });
 
     // Get Allergens Node
@@ -334,7 +334,7 @@
       label: function () {
         return this.name || "OpenFoodFacts Get Allergens";
       },
-      paletteLabel: "OpenFoodFacts Get Allergens"
+      paletteLabel: "Get Allergens"
     });
 
     // Get Brands Node
@@ -350,7 +350,7 @@
       label: function () {
         return this.name || "OpenFoodFacts Get Brands";
       },
-      paletteLabel: "OpenFoodFacts Get Brands"
+      paletteLabel: "Get Brands"
     });
 
     // Get Random Insight Node
@@ -368,7 +368,7 @@
       label: function () {
         return this.name || "OpenFoodFacts Get Random Insight";
       },
-      paletteLabel: "OpenFoodFacts Get Random Insight"
+      paletteLabel: "Get Random Insight"
     });
   })();
 </script>
