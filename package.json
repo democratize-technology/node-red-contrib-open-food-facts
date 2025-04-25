@@ -1,0 +1,42 @@
+{
+  "name": "node-red-contrib-open-food-facts",
+  "version": "0.1.0",
+  "scripts": {
+    "test": "node --test test-openfoodfacts-api.js"
+  },
+  "keywords": [
+    "node-red",
+    "openfoodfacts",
+    "open-food-facts",
+    "food",
+    "nutrition",
+    "ingredients",
+    "barcode",
+    "api",
+    "client",
+    "wrapper"
+  ],
+  "author": {
+    "name": "Democratize Technology",
+    "email": "hello@democratize.technology",
+    "url": "https://democratize.technology"
+  },
+  "license": "MIT",
+  "description": "A Node-RED node that provides easy integration with the Open Food Facts API. Search for products, retrieve product information, add products, and manage product images.",
+  "node-red": {
+    "nodes": {
+      "openfoodfacts": "openfoodfacts.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/democratize-technology/node-red-contrib-open-food-facts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/democratize-technology/node-red-contrib-open-food-facts/issues"
+  },
+  "homepage": "https://github.com/democratize-technology/node-red-contrib-open-food-facts#readme",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

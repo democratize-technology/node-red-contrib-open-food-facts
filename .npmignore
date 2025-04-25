@@ -1,0 +1,47 @@
+# Development files
+.github/
+test-*.js
+*.test.js
+*.spec.js
+
+# CI/CD
+.travis.yml
+.gitlab-ci.yml
+
+# IDE and OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Coverage directory
+coverage/
+.nyc_output/
+
+# Dependencies
+node_modules/
+
+# Build artifacts
+*.tgz
+
+# Git
+.git/
+.gitignore
+
+# Documentation source files
+docs/
+
+# Development configurations
+.eslintrc*
+.prettierrc*
+tsconfig.json
+jest.config.js
+
+# Example and demo files
+examples/
+demo/

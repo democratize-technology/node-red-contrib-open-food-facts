@@ -1,0 +1,374 @@
+<script type="text/html" data-template-name="openfoodfacts-get-product">
+  <div class="form-row">
+    <label for="node-input-name">Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-productId">Product Id</label>
+    <input type="text" id="node-input-productId" placeholder="Product Id or leave blank to get from msg.payload">
+  </div>
+</script>
+
+<script type="text/html" data-template-name="openfoodfacts-search-products">
+  <div class="form-row">
+    <label for="node-input-name">Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-searchParams">Search Params</label>
+    <input type="text" id="node-input-searchParams" placeholder='{"key": "value"}'>
+  </div>
+</script>
+
+<script type="text/html" data-template-name="openfoodfacts-get-taxonomy">
+  <div class="form-row">
+    <label for="node-input-name">Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-taxonomy">Taxonomy</label>
+    <input type="text" id="node-input-taxonomy" placeholder="Taxonomy or leave blank to get from msg.payload">
+  </div>
+</script>
+
+<!-- Add Product Node -->
+<script type="text/html" data-template-name="openfoodfacts-add-product">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-username"><i class="fa fa-user"></i> Username</label>
+    <input type="text" id="node-input-username">
+  </div>
+  <div class="form-row">
+    <label for="node-input-password"><i class="fa fa-lock"></i> Password</label>
+    <input type="password" id="node-input-password">
+  </div>
+  <div class="form-tips">
+    <b>Tip:</b> Credentials are required for adding products to OpenFoodFacts.
+  </div>
+</script>
+
+<script type="text/html" data-help-name="openfoodfacts-add-product">
+  <p>Add a new product to the OpenFoodFacts database.</p>
+  <h3>Inputs</h3>
+  <dl class="message-properties">
+    <dt>payload <span class="property-type">object</span></dt>
+    <dd>Product data object containing:</dd>
+    <ul>
+      <li><code>code</code> (required) - Product barcode</li>
+      <li><code>brands</code> (optional) - Product brands</li>
+      <li><code>labels</code> (optional) - Product labels</li>
+    </ul>
+  </dl>
+  <h3>Outputs</h3>
+  <dl class="message-properties">
+    <dt>payload <span class="property-type">object</span></dt>
+    <dd>API response from OpenFoodFacts</dd>
+  </dl>
+</script>
+
+<!-- Upload Photo Node -->
+<script type="text/html" data-template-name="openfoodfacts-upload-photo">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-username"><i class="fa fa-user"></i> Username</label>
+    <input type="text" id="node-input-username">
+  </div>
+  <div class="form-row">
+    <label for="node-input-password"><i class="fa fa-lock"></i> Password</label>
+    <input type="password" id="node-input-password">
+  </div>
+</script>
+
+<script type="text/html" data-help-name="openfoodfacts-upload-photo">
+  <p>Upload a photo for a product in OpenFoodFacts.</p>
+  <h3>Inputs</h3>
+  <dl class="message-properties">
+    <dt>payload <span class="property-type">object</span></dt>
+    <dd>Upload data object containing:</dd>
+    <ul>
+      <li><code>barcode</code> - Product barcode</li>
+      <li><code>image</code> - Image file to upload</li>
+      <li><code>type</code> - Photo type object with:
+        <ul>
+          <li><code>field</code> - Field type (front, ingredients, nutrition)</li>
+          <li><code>languageCode</code> - Language code for the image</li>
+        </ul>
+      </li>
+    </ul>
+  </dl>
+  <h3>Outputs</h3>
+  <dl class="message-properties">
+    <dt>payload <span class="property-type">object</span></dt>
+    <dd>API response from OpenFoodFacts</dd>
+  </dl>
+</script>
+
+<!-- Get Additives Node -->
+<script type="text/html" data-template-name="openfoodfacts-get-additives">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+</script>
+
+<script type="text/html" data-help-name="openfoodfacts-get-additives">
+  <p>Retrieve the additives taxonomy from OpenFoodFacts.</p>
+  <h3>Outputs</h3>
+  <dl class="message-properties">
+    <dt>payload <span class="property-type">object</span></dt>
+    <dd>Additives taxonomy data</dd>
+  </dl>
+</script>
+
+<!-- Get Allergens Node -->
+<script type="text/html" data-template-name="openfoodfacts-get-allergens">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+</script>
+
+<script type="text/html" data-help-name="openfoodfacts-get-allergens">
+  <p>Retrieve the allergens taxonomy from OpenFoodFacts.</p>
+  <h3>Outputs</h3>
+  <dl class="message-properties">
+    <dt>payload <span class="property-type">object</span></dt>
+    <dd>Allergens taxonomy data</dd>
+  </dl>
+</script>
+
+<!-- Get Brands Node -->
+<script type="text/html" data-template-name="openfoodfacts-get-brands">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+</script>
+
+<script type="text/html" data-help-name="openfoodfacts-get-brands">
+  <p>Retrieve the brands taxonomy from OpenFoodFacts.</p>
+  <h3>Outputs</h3>
+  <dl class="message-properties">
+    <dt>payload <span class="property-type">object</span></dt>
+    <dd>Brands taxonomy data</dd>
+  </dl>
+</script>
+
+<!-- Get Random Insight Node -->
+<script type="text/html" data-template-name="openfoodfacts-get-random-insight">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-count"><i class="fa fa-list-ol"></i> Count</label>
+    <input type="number" id="node-input-count" placeholder="1" min="1" max="100">
+  </div>
+  <div class="form-row">
+    <label for="node-input-lang"><i class="fa fa-language"></i> Language</label>
+    <input type="text" id="node-input-lang" placeholder="Language code (optional)">
+  </div>
+</script>
+
+<script type="text/html" data-help-name="openfoodfacts-get-random-insight">
+  <p>Retrieve random insights from OpenFoodFacts Robotoff.</p>
+  <h3>Configuration</h3>
+  <dl class="message-properties">
+    <dt>count <span class="property-type">number</span></dt>
+    <dd>Number of insights to retrieve (default: 1)</dd>
+    <dt>lang <span class="property-type">string</span></dt>
+    <dd>Language code for filtering insights (optional)</dd>
+  </dl>
+  <h3>Outputs</h3>
+  <dl class="message-properties">
+    <dt>payload <span class="property-type">object</span></dt>
+    <dd>Random insights from Robotoff</dd>
+  </dl>
+</script>
+
+<script type="text/javascript">
+  (function () {
+    RED.nodes.registerType('openfoodfacts-get-product', {
+      category: 'OpenFoodFacts',
+      icon: "off.svg",
+      color: '#f2e9e4',
+      defaults: {
+        name: { value: '' },
+        productId: { value: '' }
+      },
+      inputs: 1,
+      outputs: 1,
+      label: function () {
+        return this.name || 'OpenFoodFacts Get Product';
+      },
+      paletteLabel: "OpenFoodFacts Get Product"
+    });
+
+    RED.nodes.registerType('openfoodfacts-search-products', {
+      category: 'OpenFoodFacts',
+      color: '#f2e9e4',
+      icon: "off.svg",
+      defaults: {
+        name: { value: '' },
+        searchParams: {
+          value: {}, validate: function (v) {
+            try {
+              JSON.parse(v);
+              return true;
+            } catch (e) {
+              return false;
+            }
+          }
+        }
+      },
+      inputs: 1,
+      outputs: 1,
+      label: function () {
+        return this.name || 'OpenFoodFacts Search Products';
+      },
+      paletteLabel: "OpenFoodFacts Search Products",
+      oneditprepare: function () {
+        $('#node-input-searchParams').val(
+          typeof this.searchParams === 'object'
+            ? JSON.stringify(this.searchParams, null, 2)
+            : this.searchParams
+        );
+      },
+      oneditsave: function () {
+        try {
+          this.searchParams = JSON.parse($('#node-input-searchParams').val());
+        } catch (e) {
+          this.searchParams = {};
+        }
+      }
+    });
+
+    RED.nodes.registerType('openfoodfacts-get-taxonomy', {
+      category: 'OpenFoodFacts',
+      color: '#f2e9e4',
+      icon: "off.svg",
+      defaults: {
+        name: { value: '' },
+        taxonomy: { value: '' }
+      },
+      inputs: 1,
+      outputs: 1,
+      label: function () {
+        return this.name || 'OpenFoodFacts Get Taxonomy';
+      },
+      paletteLabel: "OpenFoodFacts Get Taxonomy"
+    });
+
+    // Add Product Node
+    RED.nodes.registerType('openfoodfacts-add-product', {
+      category: 'OpenFoodFacts',
+      color: '#f2e9e4',
+      icon: "off.svg",
+      defaults: {
+        name: { value: "" }
+      },
+      credentials: {
+        username: { type: "text" },
+        password: { type: "password" }
+      },
+      inputs: 1,
+      outputs: 1,
+      label: function () {
+        return this.name || "OpenFoodFacts Add Product";
+      },
+      paletteLabel: "OpenFoodFacts Add Product"
+    });
+
+    // Upload Photo Node
+    RED.nodes.registerType('openfoodfacts-upload-photo', {
+      category: 'OpenFoodFacts',
+      color: '#f2e9e4',
+      icon: "off.svg",
+      defaults: {
+        name: { value: "" }
+      },
+      credentials: {
+        username: { type: "text" },
+        password: { type: "password" }
+      },
+      inputs: 1,
+      outputs: 1,
+      label: function () {
+        return this.name || "OpenFoodFacts Upload Photo";
+      },
+      paletteLabel: "OpenFoodFacts Upload Photo"
+    });
+
+    // Get Additives Node
+    RED.nodes.registerType('openfoodfacts-get-additives', {
+      category: 'OpenFoodFacts',
+      color: '#f2e9e4',
+      icon: "off.svg",
+      defaults: {
+        name: { value: "" }
+      },
+      inputs: 1,
+      outputs: 1,
+      label: function () {
+        return this.name || "OpenFoodFacts Get Additives";
+      },
+      paletteLabel: "OpenFoodFacts Get Additives"
+    });
+
+    // Get Allergens Node
+    RED.nodes.registerType('openfoodfacts-get-allergens', {
+      category: 'OpenFoodFacts',
+      color: '#f2e9e4',
+      icon: "off.svg",
+      defaults: {
+        name: { value: "" }
+      },
+      inputs: 1,
+      outputs: 1,
+      label: function () {
+        return this.name || "OpenFoodFacts Get Allergens";
+      },
+      paletteLabel: "OpenFoodFacts Get Allergens"
+    });
+
+    // Get Brands Node
+    RED.nodes.registerType('openfoodfacts-get-brands', {
+      category: 'OpenFoodFacts',
+      color: '#f2e9e4',
+      icon: "off.svg",
+      defaults: {
+        name: { value: "" }
+      },
+      inputs: 1,
+      outputs: 1,
+      label: function () {
+        return this.name || "OpenFoodFacts Get Brands";
+      },
+      paletteLabel: "OpenFoodFacts Get Brands"
+    });
+
+    // Get Random Insight Node
+    RED.nodes.registerType('openfoodfacts-get-random-insight', {
+      category: 'OpenFoodFacts',
+      color: '#f2e9e4',
+      icon: "off.svg",
+      defaults: {
+        name: { value: "" },
+        count: { value: 1, validate: RED.validators.number() },
+        lang: { value: "" }
+      },
+      inputs: 1,
+      outputs: 1,
+      label: function () {
+        return this.name || "OpenFoodFacts Get Random Insight";
+      },
+      paletteLabel: "OpenFoodFacts Get Random Insight"
+    });
+  })();
+</script>
