@@ -32,7 +32,7 @@ module.exports = function (RED) {
     const node = this;
 
     node.on('input', async function (msg) {
-      const searchParams = config.searchParams || msg.payload.searchParams;
+      const searchParams = msg.payload.searchParams || config.searchParams;
       if (!searchParams) {
         node.error('No searchParams provided', msg);
         return;
