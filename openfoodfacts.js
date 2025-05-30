@@ -1,4 +1,5 @@
-const { OpenFoodFactsAPI } = require('./openfoodfacts-api');
+const { retry, handleType, ExponentialBackoff } = require('cockatiel');
+const { OpenFoodFactsAPI, OpenFoodFactsError } = require('./openfoodfacts-api');
 
 module.exports = function (RED) {
   const client = new OpenFoodFactsAPI();
@@ -38,7 +39,10 @@ module.exports = function (RED) {
         return;
       }
 
-      const payload = await client.searchProducts(JSON.parse(searchParams));
+      const payload = await retry(handleType(OpenFoodFactsError), {
+        maxAttempts: 3,
+        backoff: new ExponentialBackoff(),
+      }).execute(() => client.searchProducts(JSON.parse(searchParams)));
 
       node.send({ ...msg, payload });
     });
