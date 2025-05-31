@@ -12,15 +12,18 @@ module.exports = function (RED) {
     const node = this;
 
     node.on('input', async function (msg) {
-      const productId = config.productId || msg.payload.productId;
-      if (!productId) {
-        node.error('No productId provided', msg);
-        return;
+      try {
+        const productId = config.productId || msg.payload.productId;
+        if (!productId) {
+          node.error('No productId provided', msg);
+          return;
+        }
+
+        const payload = await client.getProduct(productId);
+        node.send({ ...msg, payload });
+      } catch (error) {
+        node.error(error.message, msg);
       }
-
-      const payload = await client.getProduct(productId);
-
-      node.send({ ...msg, payload });
     });
   }
   RED.nodes.registerType('openfoodfacts-get-product', OffGetProductNode);
@@ -33,18 +36,22 @@ module.exports = function (RED) {
     const node = this;
 
     node.on('input', async function (msg) {
-      const searchParams = msg.payload.searchParams || config.searchParams;
-      if (!searchParams) {
-        node.error('No searchParams provided', msg);
-        return;
+      try {
+        const searchParams = msg.payload.searchParams || config.searchParams;
+        if (!searchParams) {
+          node.error('No searchParams provided', msg);
+          return;
+        }
+
+        const payload = await retry(handleType(OpenFoodFactsError), {
+          maxAttempts: 3,
+          backoff: new ExponentialBackoff(),
+        }).execute(() => client.searchProducts(JSON.parse(searchParams)));
+
+        node.send({ ...msg, payload });
+      } catch (error) {
+        node.error(error.message, msg);
       }
-
-      const payload = await retry(handleType(OpenFoodFactsError), {
-        maxAttempts: 3,
-        backoff: new ExponentialBackoff(),
-      }).execute(() => client.searchProducts(JSON.parse(searchParams)));
-
-      node.send({ ...msg, payload });
     });
   }
   RED.nodes.registerType('openfoodfacts-search-products', OffSearchProductsNode);
@@ -57,15 +64,18 @@ module.exports = function (RED) {
     const node = this;
 
     node.on('input', async function (msg) {
-      const taxonomy = config.taxonomy || msg.payload.taxonomy;
-      if (!taxonomy) {
-        node.error('No taxonomy provided', msg);
-        return;
+      try {
+        const taxonomy = config.taxonomy || msg.payload.taxonomy;
+        if (!taxonomy) {
+          node.error('No taxonomy provided', msg);
+          return;
+        }
+
+        const payload = await client.getTaxonomy(taxonomy);
+        node.send({ ...msg, payload });
+      } catch (error) {
+        node.error(error.message, msg);
       }
-
-      const payload = await client.getTaxonomy(taxonomy);
-
-      node.send({ ...msg, payload });
     });
   }
   RED.nodes.registerType('openfoodfacts-get-taxonomy', OffGetTaxonomyNode);
