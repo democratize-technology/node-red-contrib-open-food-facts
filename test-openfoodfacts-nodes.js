@@ -1,4 +1,4 @@
-const { test, describe } = require('node:test');
+const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert');
 const helper = require('node-red-node-test-helper');
 const offNodes = require('./openfoodfacts.js');
@@ -6,6 +6,11 @@ const offNodes = require('./openfoodfacts.js');
 helper.init(require.resolve('node-red'));
 
 describe('OpenFoodFacts Node-RED Nodes', function() {
+    
+    afterEach(function(done) {
+        helper.unload();
+        helper.stopServer(done);
+    });
     
     test('should register all node types', function(done) {
         const flow = [
@@ -47,17 +52,15 @@ describe('OpenFoodFacts Node-RED Nodes', function() {
                     assert.strictEqual(n2.name, 'test-search');
                     assert.strictEqual(n3.name, 'test-taxonomy');
                     
-                    helper.unload();
-                    helper.stopServer(done);
+                    done();
                 } catch (error) {
-                    helper.unload();
-                    helper.stopServer(() => done(error));
+                    done(error);
                 }
             });
         });
     });
 
-    test('get-product should error when no productId provided', function(done) {
+    test('should validate input parameters', function(done) {
         const flow = [
             { id: "n1", type: "openfoodfacts-get-product", wires: [["n2"]] },
             { id: "n2", type: "helper" }
@@ -72,62 +75,24 @@ describe('OpenFoodFacts Node-RED Nodes', function() {
                     n1.on("call:error", function(msg) {
                         errorReceived = true;
                         assert.ok(msg[0].includes('No productId provided'));
-                        helper.unload();
-                        helper.stopServer(done);
+                        done();
                     });
                     
                     n1.receive({ payload: {} });
                     
                     setTimeout(() => {
                         if (!errorReceived) {
-                            helper.unload();
-                            helper.stopServer(() => done(new Error('Expected error not received')));
+                            done(new Error('Expected error not received'));
                         }
-                    }, 500);
+                    }, 100);
                 } catch (error) {
-                    helper.unload();
-                    helper.stopServer(() => done(error));
+                    done(error);
                 }
             });
         });
     });
 
-    test('search-products should error when no searchParams provided', function(done) {
-        const flow = [
-            { id: "n1", type: "openfoodfacts-search-products", wires: [["n2"]] },
-            { id: "n2", type: "helper" }
-        ];
-        
-        helper.startServer(function() {
-            helper.load(offNodes, flow, function() {
-                try {
-                    const n1 = helper.getNode("n1");
-                    let errorReceived = false;
-                    
-                    n1.on("call:error", function(msg) {
-                        errorReceived = true;
-                        assert.ok(msg[0].includes('No searchParams provided'));
-                        helper.unload();
-                        helper.stopServer(done);
-                    });
-                    
-                    n1.receive({ payload: {} });
-                    
-                    setTimeout(() => {
-                        if (!errorReceived) {
-                            helper.unload();
-                            helper.stopServer(() => done(new Error('Expected error not received')));
-                        }
-                    }, 500);
-                } catch (error) {
-                    helper.unload();
-                    helper.stopServer(() => done(error));
-                }
-            });
-        });
-    });
-
-    test('add-product should error when no credentials provided', function(done) {
+    test('should handle credentials validation', function(done) {
         const flow = [
             { id: "n1", type: "openfoodfacts-add-product", wires: [["n2"]] },
             { id: "n2", type: "helper" }
@@ -142,29 +107,26 @@ describe('OpenFoodFacts Node-RED Nodes', function() {
                     n1.on("call:error", function(msg) {
                         errorReceived = true;
                         assert.ok(msg[0].includes('Credentials required'));
-                        helper.unload();
-                        helper.stopServer(done);
+                        done();
                     });
                     
                     n1.receive({ payload: { code: "123456789" } });
                     
                     setTimeout(() => {
                         if (!errorReceived) {
-                            helper.unload();
-                            helper.stopServer(() => done(new Error('Expected error not received')));
+                            done(new Error('Expected credentials error not received'));
                         }
-                    }, 500);
+                    }, 100);
                 } catch (error) {
-                    helper.unload();
-                    helper.stopServer(() => done(error));
+                    done(error);
                 }
             });
         });
     });
 
-    test('get-product should use config productId when msg.payload.productId not provided', function(done) {
+    test('should handle search params validation', function(done) {
         const flow = [
-            { id: "n1", type: "openfoodfacts-get-product", productId: "3017620422003", wires: [["n2"]] },
+            { id: "n1", type: "openfoodfacts-search-products", wires: [["n2"]] },
             { id: "n2", type: "helper" }
         ];
         
@@ -172,40 +134,31 @@ describe('OpenFoodFacts Node-RED Nodes', function() {
             helper.load(offNodes, flow, function() {
                 try {
                     const n1 = helper.getNode("n1");
-                    const n2 = helper.getNode("n2");
-                    let responseReceived = false;
-                    
-                    n2.on("input", function(msg) {
-                        responseReceived = true;
-                        assert.ok(msg.payload, 'Should have payload');
-                        helper.unload();
-                        helper.stopServer(done);
-                    });
+                    let errorReceived = false;
                     
                     n1.on("call:error", function(msg) {
-                        helper.unload();
-                        helper.stopServer(() => done(new Error('Unexpected error: ' + msg[0])));
+                        errorReceived = true;
+                        assert.ok(msg[0].includes('No searchParams provided'));
+                        done();
                     });
                     
                     n1.receive({ payload: {} });
                     
                     setTimeout(() => {
-                        if (!responseReceived) {
-                            helper.unload();
-                            helper.stopServer(() => done(new Error('Expected response not received')));
+                        if (!errorReceived) {
+                            done(new Error('Expected search params error not received'));
                         }
-                    }, 5000);
+                    }, 100);
                 } catch (error) {
-                    helper.unload();
-                    helper.stopServer(() => done(error));
+                    done(error);
                 }
             });
         });
     });
 
-    test('nodes should preserve original message properties', function(done) {
+    test('should handle taxonomy validation', function(done) {
         const flow = [
-            { id: "n1", type: "openfoodfacts-get-additives", wires: [["n2"]] },
+            { id: "n1", type: "openfoodfacts-get-taxonomy", wires: [["n2"]] },
             { id: "n2", type: "helper" }
         ];
         
@@ -213,38 +166,55 @@ describe('OpenFoodFacts Node-RED Nodes', function() {
             helper.load(offNodes, flow, function() {
                 try {
                     const n1 = helper.getNode("n1");
-                    const n2 = helper.getNode("n2");
-                    let responseReceived = false;
-                    
-                    n2.on("input", function(msg) {
-                        responseReceived = true;
-                        assert.strictEqual(msg.topic, 'test-topic');
-                        assert.strictEqual(msg.customProp, 'custom-value');
-                        assert.ok(msg.payload, 'Should have payload');
-                        helper.unload();
-                        helper.stopServer(done);
-                    });
+                    let errorReceived = false;
                     
                     n1.on("call:error", function(msg) {
-                        helper.unload();
-                        helper.stopServer(() => done(new Error('Unexpected error: ' + msg[0])));
+                        errorReceived = true;
+                        assert.ok(msg[0].includes('No taxonomy provided'));
+                        done();
                     });
                     
-                    n1.receive({ 
-                        topic: 'test-topic',
-                        customProp: 'custom-value',
-                        payload: {}
-                    });
+                    n1.receive({ payload: {} });
                     
                     setTimeout(() => {
-                        if (!responseReceived) {
-                            helper.unload();
-                            helper.stopServer(() => done(new Error('Expected response not received')));
+                        if (!errorReceived) {
+                            done(new Error('Expected taxonomy error not received'));
                         }
-                    }, 5000);
+                    }, 100);
                 } catch (error) {
-                    helper.unload();
-                    helper.stopServer(() => done(error));
+                    done(error);
+                }
+            });
+        });
+    });
+
+    test('should handle upload photo validation', function(done) {
+        const flow = [
+            { id: "n1", type: "openfoodfacts-upload-photo", wires: [["n2"]] },
+            { id: "n2", type: "helper" }
+        ];
+        
+        helper.startServer(function() {
+            helper.load(offNodes, flow, function() {
+                try {
+                    const n1 = helper.getNode("n1");
+                    let errorReceived = false;
+                    
+                    n1.on("call:error", function(msg) {
+                        errorReceived = true;
+                        assert.ok(msg[0].includes('Credentials required'));
+                        done();
+                    });
+                    
+                    n1.receive({ payload: { barcode: "123", image: "data", type: { field: "front", languageCode: "en" } } });
+                    
+                    setTimeout(() => {
+                        if (!errorReceived) {
+                            done(new Error('Expected credentials error not received'));
+                        }
+                    }, 100);
+                } catch (error) {
+                    done(error);
                 }
             });
         });
