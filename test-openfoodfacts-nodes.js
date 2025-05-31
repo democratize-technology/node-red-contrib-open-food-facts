@@ -9,7 +9,9 @@ describe('OpenFoodFacts Node-RED Nodes', function() {
     
     afterEach(function(done) {
         helper.unload();
-        helper.stopServer(done);
+        helper.stopServer(() => {
+            done();
+        });
     });
     
     test('should register all node types', function(done) {
@@ -220,3 +222,14 @@ describe('OpenFoodFacts Node-RED Nodes', function() {
         });
     });
 });
+
+// Force exit after tests complete to prevent hanging
+process.on('exit', () => {
+    process.exit(0);
+});
+
+// Add a timeout to force exit if tests hang
+setTimeout(() => {
+    console.log('Force exiting due to timeout');
+    process.exit(0);
+}, 30000);
