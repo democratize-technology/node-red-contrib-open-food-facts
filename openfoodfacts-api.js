@@ -85,7 +85,7 @@ class OpenFoodFactsAPI {
    * @param {File} file - File to validate
    * @private
    */
-  _validateImageFile(file) {
+  async _validateImageFile(file) {
     if (!file) {
       throw new Error('Image file is required');
     }
@@ -100,6 +100,47 @@ class OpenFoodFactsAPI {
       const maxSize = 10 * 1024 * 1024; // 10MB
       if (file.size > maxSize) {
         throw new Error('File size too large. Maximum size is 10MB.');
+      }
+    }
+    
+    // Additional magic byte validation for enhanced security
+    if (file.arrayBuffer && typeof file.arrayBuffer === 'function') {
+      try {
+        const buffer = await file.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        
+        // Check magic bytes for known image formats
+        const signatures = {
+          jpeg: [0xFF, 0xD8, 0xFF],
+          png: [0x89, 0x50, 0x4E, 0x47],
+          webp: [0x52, 0x49, 0x46, 0x46] // RIFF header (WebP starts with RIFF)
+        };
+        
+        let validSignature = false;
+        for (const [format, signature] of Object.entries(signatures)) {
+          if (signature.every((byte, index) => bytes[index] === byte)) {
+            // Additional check for WebP format - verify 'WEBP' identifier at offset 8
+            if (format === 'webp' && bytes.length >= 12) {
+              const webpIdentifier = [0x57, 0x45, 0x42, 0x50]; // 'WEBP'
+              if (!webpIdentifier.every((byte, index) => bytes[8 + index] === byte)) {
+                continue; // RIFF header found but not WebP, continue checking other formats
+              }
+            }
+            validSignature = true;
+            break;
+          }
+        }
+        
+        if (!validSignature) {
+          throw new Error('File content does not match allowed image formats');
+        }
+      } catch (error) {
+        // If magic byte validation fails, throw the error
+        if (error.message === 'File content does not match allowed image formats') {
+          throw error;
+        }
+        // For other errors (e.g., reading buffer), we'll log and continue
+        // This maintains compatibility with environments where arrayBuffer might not be available
       }
     }
   }
@@ -351,7 +392,7 @@ class OpenFoodFactsAPI {
     // Ensure secure connection before sending credentials
     this._validateSecureConnection();
     this._validateBarcode(barcode);
-    this._validateImageFile(image);
+    await this._validateImageFile(image);
     
     if (!type || !type.field || !type.languageCode) {
       throw new Error('Type with field and languageCode is required');

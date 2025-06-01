@@ -713,7 +713,7 @@ describe('OpenFoodFactsAPI', () => {
       );
     });
 
-    test('should validate image files correctly', () => {
+    test('should validate image files correctly', async () => {
       api = new OpenFoodFactsAPI();
       
       // Test valid image files
@@ -721,38 +721,100 @@ describe('OpenFoodFactsAPI', () => {
       const validPng = { type: 'image/png', size: 2048 };
       const validWebp = { type: 'image/webp', size: 4096 };
       
-      assert.doesNotThrow(() => api._validateImageFile(validJpeg));
-      assert.doesNotThrow(() => api._validateImageFile(validPng));
-      assert.doesNotThrow(() => api._validateImageFile(validWebp));
+      await assert.doesNotReject(() => api._validateImageFile(validJpeg));
+      await assert.doesNotReject(() => api._validateImageFile(validPng));
+      await assert.doesNotReject(() => api._validateImageFile(validWebp));
       
       // Test null/undefined file
-      assert.throws(
+      await assert.rejects(
         () => api._validateImageFile(null),
         { message: 'Image file is required' }
       );
       
-      assert.throws(
+      await assert.rejects(
         () => api._validateImageFile(undefined),
         { message: 'Image file is required' }
       );
       
       // Test invalid file type
       const invalidFile = { type: 'text/plain', size: 1024 };
-      assert.throws(
+      await assert.rejects(
         () => api._validateImageFile(invalidFile),
         { message: 'Invalid file type. Only JPEG, PNG, and WebP images are allowed.' }
       );
       
       // Test oversized file
       const largeFile = { type: 'image/jpeg', size: 11 * 1024 * 1024 };
-      assert.throws(
+      await assert.rejects(
         () => api._validateImageFile(largeFile),
         { message: 'File size too large. Maximum size is 10MB.' }
       );
       
       // Test mock objects (no type/size properties) - should not throw
       const mockFile = {};
-      assert.doesNotThrow(() => api._validateImageFile(mockFile));
+      await assert.doesNotReject(() => api._validateImageFile(mockFile));
+    });
+
+    test('should validate image files with magic bytes', async () => {
+      api = new OpenFoodFactsAPI();
+      
+      // Create mock files with valid magic bytes
+      const validJpegBuffer = new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10]);
+      const validPngBuffer = new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A]);
+      const validWebpBuffer = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50]);
+      
+      const validJpegFile = {
+        type: 'image/jpeg',
+        size: 1024,
+        arrayBuffer: async () => validJpegBuffer.buffer
+      };
+      
+      const validPngFile = {
+        type: 'image/png',
+        size: 1024,
+        arrayBuffer: async () => validPngBuffer.buffer
+      };
+      
+      const validWebpFile = {
+        type: 'image/webp',
+        size: 1024,
+        arrayBuffer: async () => validWebpBuffer.buffer
+      };
+      
+      // Test valid magic bytes
+      await assert.doesNotReject(() => api._validateImageFile(validJpegFile));
+      await assert.doesNotReject(() => api._validateImageFile(validPngFile));
+      await assert.doesNotReject(() => api._validateImageFile(validWebpFile));
+      
+      // Test invalid magic bytes
+      const invalidBuffer = new Uint8Array([0x50, 0x4B, 0x03, 0x04]); // ZIP header
+      const invalidFile = {
+        type: 'image/jpeg',
+        size: 1024,
+        arrayBuffer: async () => invalidBuffer.buffer
+      };
+      
+      await assert.rejects(
+        () => api._validateImageFile(invalidFile),
+        { message: 'File content does not match allowed image formats' }
+      );
+      
+      // Test RIFF header without WEBP identifier (should be rejected)
+      const riffOnlyBuffer = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x41, 0x56, 0x49, 0x20]); // RIFF + AVI
+      const riffOnlyFile = {
+        type: 'image/webp',
+        size: 1024,
+        arrayBuffer: async () => riffOnlyBuffer.buffer
+      };
+      
+      await assert.rejects(
+        () => api._validateImageFile(riffOnlyFile),
+        { message: 'File content does not match allowed image formats' }
+      );
+      
+      // Test file without arrayBuffer method (should not throw for backwards compatibility)
+      const fileWithoutArrayBuffer = { type: 'image/jpeg', size: 1024 };
+      await assert.doesNotReject(() => api._validateImageFile(fileWithoutArrayBuffer));
     });
 
     test('should sanitize search input correctly', () => {
