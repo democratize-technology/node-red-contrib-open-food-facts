@@ -244,12 +244,11 @@ This repository uses automated PR reviews powered by Amazon Bedrock and Claude A
 
 ### Setup Requirements
 
-To enable automated PR reviews, repository administrators need to configure the following secrets in Settings → Secrets and variables → Actions → Repository secrets:
+To enable automated PR reviews, repository administrators need to configure the following secret in Settings → Secrets and variables → Actions → Repository secrets:
 
-- `AWS_ACCESS_KEY_ID`: Your AWS access key with Bedrock permissions
-- `AWS_SECRET_ACCESS_KEY`: Your AWS secret access key
+- `ANTHROPIC_API_KEY`: Your Anthropic API key (get one at https://console.anthropic.com/)
 
-The workflow uses the `anthropic.claude-3-5-sonnet-20241022-v2:0` model in the `us-east-1` region.
+The workflow uses Claude 3.5 Sonnet for intelligent code analysis and provides standard-level reviews including performance and security feedback.
 
 ## Contributing
 
