@@ -761,7 +761,7 @@ describe('OpenFoodFactsAPI', () => {
       // Create mock files with valid magic bytes
       const validJpegBuffer = new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10]);
       const validPngBuffer = new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A]);
-      const validWebpBuffer = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0x28, 0x00]);
+      const validWebpBuffer = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50]);
       
       const validJpegFile = {
         type: 'image/jpeg',
@@ -796,6 +796,19 @@ describe('OpenFoodFactsAPI', () => {
       
       await assert.rejects(
         () => api._validateImageFile(invalidFile),
+        { message: 'File content does not match allowed image formats' }
+      );
+      
+      // Test RIFF header without WEBP identifier (should be rejected)
+      const riffOnlyBuffer = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x41, 0x56, 0x49, 0x20]); // RIFF + AVI
+      const riffOnlyFile = {
+        type: 'image/webp',
+        size: 1024,
+        arrayBuffer: async () => riffOnlyBuffer.buffer
+      };
+      
+      await assert.rejects(
+        () => api._validateImageFile(riffOnlyFile),
         { message: 'File content does not match allowed image formats' }
       );
       

@@ -119,6 +119,13 @@ class OpenFoodFactsAPI {
         let validSignature = false;
         for (const [format, signature] of Object.entries(signatures)) {
           if (signature.every((byte, index) => bytes[index] === byte)) {
+            // Additional check for WebP format - verify 'WEBP' identifier at offset 8
+            if (format === 'webp' && bytes.length >= 12) {
+              const webpIdentifier = [0x57, 0x45, 0x42, 0x50]; // 'WEBP'
+              if (!webpIdentifier.every((byte, index) => bytes[8 + index] === byte)) {
+                continue; // RIFF header found but not WebP, continue checking other formats
+              }
+            }
             validSignature = true;
             break;
           }
