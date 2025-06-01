@@ -6,6 +6,11 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 5
     reviewers:
-      - "democratize-technology"
+      - "democratize-technology-code-developer"
+      - "democratize-technology-code-reviewer"
     assignees:
-      - "democratize-technology"
+      - "democratize-technology-code-developer"
+    commit-message:
+      prefix: "chore"
+    labels:
+      - "dependencies"
