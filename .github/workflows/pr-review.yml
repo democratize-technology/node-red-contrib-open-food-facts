@@ -20,9 +20,10 @@ jobs:
 
       - name: PR Review
         uses: tmokmss/bedrock-pr-reviewer@v1
+        env:
+          AWS_REGION: us-east-1
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          bedrock_region: us-east-1
-          model_id: anthropic.claude-3-5-sonnet-20241022-v2:0
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          bedrock_heavy_model: anthropic.claude-3-5-sonnet-20241022-v2:0
