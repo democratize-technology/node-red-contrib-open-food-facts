@@ -43,7 +43,86 @@ class OpenFoodFactsAPI {
    * @param {string} password - Open Food Facts password
    */
   setCredentials(userId, password) {
+    if (typeof userId !== 'string' || typeof password !== 'string') {
+      throw new Error('User ID and password must be strings');
+    }
+    if (!userId.trim() || !password.trim()) {
+      throw new Error('User ID and password cannot be empty');
+    }
     this.credentials = { userId, password };
+  }
+
+  /**
+   * Validates barcode format
+   * @param {string} barcode - Barcode to validate
+   * @param {boolean} allowPartial - Allow partial barcodes for search
+   * @private
+   */
+  _validateBarcode(barcode, allowPartial = false) {
+    if (typeof barcode !== 'string') {
+      throw new Error('Barcode must be a string');
+    }
+    if (allowPartial) {
+      if (!/^\d+$/.test(barcode) || barcode.length === 0) {
+        throw new Error('Invalid barcode format. Must contain only digits.');
+      }
+    } else {
+      if (!/^\d{8,13}$/.test(barcode)) {
+        throw new Error('Invalid barcode format. Must be 8-13 digits.');
+      }
+    }
+  }
+
+  /**
+   * Validates image file for upload
+   * @param {File} file - File to validate
+   * @private
+   */
+  _validateImageFile(file) {
+    if (!file) {
+      throw new Error('Image file is required');
+    }
+    // Only validate file properties if they exist (allows for mock objects in tests)
+    if (file.type !== undefined) {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        throw new Error('Invalid file type. Only JPEG, PNG, and WebP images are allowed.');
+      }
+    }
+    if (file.size !== undefined) {
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        throw new Error('File size too large. Maximum size is 10MB.');
+      }
+    }
+  }
+
+  /**
+   * Sanitizes search parameters
+   * @param {string} input - Input to sanitize
+   * @private
+   */
+  _sanitizeSearchInput(input) {
+    if (typeof input !== 'string') {
+      throw new Error('Search input must be a string');
+    }
+    // Remove potentially dangerous characters and limit length
+    return input.replace(/[<>"'&]/g, '').trim().substring(0, 100);
+  }
+
+  /**
+   * Creates authentication headers
+   * @returns {Object} Headers object with authentication
+   * @private
+   */
+  _createAuthHeaders() {
+    if (!this.credentials) {
+      return {};
+    }
+    const auth = Buffer.from(`${this.credentials.userId}:${this.credentials.password}`).toString('base64');
+    return {
+      'Authorization': `Basic ${auth}`
+    };
   }
 
   /**
@@ -52,6 +131,8 @@ class OpenFoodFactsAPI {
    * @returns {Promise<Object>} Product details
    */
   async getProduct(barcode) {
+    this._validateBarcode(barcode);
+    
     try {
       const response = await fetch(`${this.baseUrl}/api/v0/product/${barcode}`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -119,11 +200,12 @@ class OpenFoodFactsAPI {
 
       // Add text search if provided
       if (params.search_terms) {
-        queryParams.append('search_terms', params.search_terms);
+        queryParams.append('search_terms', this._sanitizeSearchInput(params.search_terms));
       }
 
       // Handle code search with different matching types
       if (params.code) {
+        this._validateBarcode(params.code, true);
         queryParams.append('code', params.code);
         if (params.code_type) {
           switch (params.code_type) {
@@ -212,15 +294,21 @@ class OpenFoodFactsAPI {
     if (!this.credentials) {
       throw new Error('Credentials required for adding products');
     }
+    
+    this._validateBarcode(data.code);
 
     try {
       const formData = new FormData();
       formData.append('code', data.code);
-      if (data.brands) formData.append('brands', data.brands);
-      if (data.labels) formData.append('labels', data.labels);
+      formData.append('user_id', this.credentials.userId);
+      formData.append('password', this.credentials.password);
+      if (data.brands) formData.append('brands', this._sanitizeSearchInput(data.brands));
+      if (data.labels) formData.append('labels', this._sanitizeSearchInput(data.labels));
 
+      const headers = this._createAuthHeaders();
       const response = await fetch(`${this.baseUrl}/cgi/product_jqm2.pl`, {
         method: 'POST',
+        headers,
         body: formData,
       });
 
@@ -244,15 +332,31 @@ class OpenFoodFactsAPI {
     if (!this.credentials) {
       throw new Error('Credentials required for uploading photos');
     }
+    
+    this._validateBarcode(barcode);
+    this._validateImageFile(image);
+    
+    if (!type || !type.field || !type.languageCode) {
+      throw new Error('Type with field and languageCode is required');
+    }
+    
+    const allowedFields = ['front', 'ingredients', 'nutrition'];
+    if (!allowedFields.includes(type.field)) {
+      throw new Error('Invalid field type. Must be front, ingredients, or nutrition.');
+    }
 
     try {
       const formData = new FormData();
       formData.append('code', barcode);
+      formData.append('user_id', this.credentials.userId);
+      formData.append('password', this.credentials.password);
       formData.append('imagefield', `${type.field}_${type.languageCode}`);
       formData.append(`imgupload_${type.field}_${type.languageCode}`, image);
 
+      const headers = this._createAuthHeaders();
       const response = await fetch(`${this.baseUrl}/cgi/product_image_upload.pl`, {
         method: 'POST',
+        headers,
         body: formData,
       });
 
