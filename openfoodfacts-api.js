@@ -106,22 +106,25 @@ class OpenFoodFactsAPI {
     if (typeof input !== 'string') {
       throw new Error('Search input must be a string');
     }
-    // Remove potentially dangerous characters and limit length
-    return input.replace(/[<>"'&]/g, '').trim().substring(0, 100);
+    // Escape potentially dangerous characters and limit length
+    return input
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;')
+      .trim()
+      .substring(0, 100);
   }
 
   /**
-   * Creates authentication headers
-   * @returns {Object} Headers object with authentication
+   * Creates headers for requests (reserved for future use)
+   * @returns {Object} Headers object
    * @private
    */
-  _createAuthHeaders() {
-    if (!this.credentials) {
-      return {};
-    }
-    const auth = Buffer.from(`${this.credentials.userId}:${this.credentials.password}`).toString('base64');
+  _createRequestHeaders() {
     return {
-      'Authorization': `Basic ${auth}`
+      'User-Agent': 'node-red-contrib-open-food-facts/0.2.2'
     };
   }
 
@@ -305,7 +308,7 @@ class OpenFoodFactsAPI {
       if (data.brands) formData.append('brands', this._sanitizeSearchInput(data.brands));
       if (data.labels) formData.append('labels', this._sanitizeSearchInput(data.labels));
 
-      const headers = this._createAuthHeaders();
+      const headers = this._createRequestHeaders();
       const response = await fetch(`${this.baseUrl}/cgi/product_jqm2.pl`, {
         method: 'POST',
         headers,
@@ -353,7 +356,7 @@ class OpenFoodFactsAPI {
       formData.append('imagefield', `${type.field}_${type.languageCode}`);
       formData.append(`imgupload_${type.field}_${type.languageCode}`, image);
 
-      const headers = this._createAuthHeaders();
+      const headers = this._createRequestHeaders();
       const response = await fetch(`${this.baseUrl}/cgi/product_image_upload.pl`, {
         method: 'POST',
         headers,
