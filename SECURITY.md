@@ -13,7 +13,7 @@ We actively support the latest version of this Node-RED node. Security updates w
 If you discover a security vulnerability in this project, please report it by:
 
 1. **DO NOT** open a public issue
-2. Email the maintainer directly or use GitHub's private vulnerability reporting feature
+2. Use GitHub's private vulnerability reporting feature at https://github.com/democratize-technology/node-red-contrib-open-food-facts/security/advisories/new
 3. Include a detailed description of the vulnerability
 4. Provide steps to reproduce if possible
 
@@ -24,7 +24,7 @@ We will acknowledge receipt of your report within 48 hours and provide a timelin
 This Node-RED node:
 - Communicates with the Open Food Facts API over HTTPS
 - Does not store or cache sensitive data
-- Does not require authentication credentials
+- Supports optional authentication for write operations (credentials managed by Node-RED's credential system)
 - Processes publicly available food product data
 
 ## Dependencies
