@@ -6,6 +6,7 @@
 - Follow the existing commit message style seen in git log
 - Run `npm test` to verify all tests pass before committing
 - No lint/typecheck commands are configured in this project
+- **Always ensure newline at end of file** for all files
 
 ## Development Workflow
 
