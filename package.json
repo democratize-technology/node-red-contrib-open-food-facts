@@ -40,7 +40,8 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "cockatiel": "^3.2.1"
+    "cockatiel": "^3.2.1",
+    "he": "^1.2.0"
   },
   "devDependencies": {
     "node-red": "^4.0.9",

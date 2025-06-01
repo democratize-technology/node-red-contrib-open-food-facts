@@ -730,13 +730,13 @@ describe('OpenFoodFactsAPI', () => {
       // Test input with dangerous characters
       assert.strictEqual(
         api._sanitizeSearchInput('<script>alert("xss")</script>Chocolate'),
-        '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;Chocolate'
+        '&#x3C;script&#x3E;alert(&#x22;xss&#x22;)&#x3C;/script&#x3E;Chocolate'
       );
       
       // Test input with quotes and ampersands
       assert.strictEqual(
         api._sanitizeSearchInput('Ben & Jerry\'s "Chunky Monkey"'),
-        'Ben &amp; Jerry&#x27;s &quot;Chunky Monkey&quot;'
+        'Ben &#x26; Jerry&#x27;s &#x22;Chunky Monkey&#x22;'
       );
       
       // Test long input truncation
@@ -871,7 +871,7 @@ describe('OpenFoodFactsAPI', () => {
       });
       
       const url = new URL(global.fetch.mock.calls[0].arguments[0]);
-      assert.strictEqual(url.searchParams.get('search_terms'), '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;Chocolate');
+      assert.strictEqual(url.searchParams.get('search_terms'), '&#x3C;script&#x3E;alert(&#x22;xss&#x22;)&#x3C;/script&#x3E;Chocolate');
     });
   });
 

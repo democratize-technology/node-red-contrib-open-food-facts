@@ -3,6 +3,8 @@
  * A client library for interacting with the Open Food Facts API
  */
 
+const he = require('he');
+
 /**
  * Custom error class for OpenFoodFacts API errors
  * @class OpenFoodFactsError
@@ -106,15 +108,8 @@ class OpenFoodFactsAPI {
     if (typeof input !== 'string') {
       throw new Error('Search input must be a string');
     }
-    // Escape potentially dangerous characters and limit length
-    return input
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#x27;')
-      .trim()
-      .substring(0, 100);
+    // Use he.js library for robust HTML entity encoding and limit length
+    return he.encode(input).trim().substring(0, 100);
   }
 
   /**
