@@ -37,3 +37,6 @@ build/
 .vscode/
 *.swp
 *.swo
+
+# Claude Code directory
+.claude/
