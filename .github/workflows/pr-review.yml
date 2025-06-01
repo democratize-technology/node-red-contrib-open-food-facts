@@ -2,7 +2,7 @@ name: PR Review
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize]
 
 permissions:
   contents: read
@@ -24,10 +24,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: PR Review
-        uses: tmokmss/bedrock-pr-reviewer@v1
+      - name: AI PR Reviewer
+        uses: fluxninja/ai-pr-reviewer@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          bedrock_light_model: us.anthropic.claude-3-5-haiku-20241022-v1:0
-          bedrock_heavy_model: us.anthropic.claude-3-5-sonnet-20241022-v2:0
+          provider: aws
+          aws_bedrock_model: anthropic.claude-3-5-sonnet-20241022-v2:0
+          aws_region: us-east-1
