@@ -25,10 +25,6 @@ jobs:
           aws-region: us-east-1
 
       - name: AI PR Reviewer
-        uses: coderabbitai/ai-pr-reviewer@latest
+        uses: tmokmss/bedrock-pr-reviewer@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AWS_REGION: us-east-1
-        with:
-          provider: aws_bedrock
-          aws_bedrock_model: anthropic.claude-3-5-sonnet-20241022-v2:0
