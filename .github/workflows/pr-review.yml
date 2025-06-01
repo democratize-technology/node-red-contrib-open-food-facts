@@ -28,3 +28,8 @@ jobs:
         uses: tmokmss/bedrock-pr-reviewer@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          debug: true
+          bedrock_light_model: us.anthropic.claude-3-5-haiku-20241022-v1:0
+          bedrock_heavy_model: us.anthropic.claude-3-5-sonnet-20241022-v2:0
+          bedrock_timeout_ms: 120000
