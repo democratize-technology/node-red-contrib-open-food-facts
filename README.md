@@ -234,6 +234,23 @@ Run the test suite:
 npm test
 ```
 
+## Automated PR Reviews
+
+This repository uses automated PR reviews powered by Amazon Bedrock and Claude AI via GitHub Actions. When you create a pull request, the workflow will automatically:
+
+- Analyze your code changes
+- Provide intelligent feedback and suggestions
+- Check for potential issues and improvements
+
+### Setup Requirements
+
+To enable automated PR reviews, repository administrators need to configure the following secrets in Settings → Secrets and variables → Actions → Repository secrets:
+
+- `AWS_ACCESS_KEY_ID`: Your AWS access key with Bedrock permissions
+- `AWS_SECRET_ACCESS_KEY`: Your AWS secret access key
+
+The workflow uses the `anthropic.claude-3-5-sonnet-20241022-v2:0` model in the `us-east-1` region.
+
 ## Contributing
 
 Contributions are welcome! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.

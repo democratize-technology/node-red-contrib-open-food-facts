@@ -1,0 +1,28 @@
+name: PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: PR Review
+        uses: tmokmss/bedrock-pr-reviewer@v1
+        with:
+          bedrock_region: us-east-1
+          model_id: anthropic.claude-3-5-sonnet-20241022-v2:0
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
