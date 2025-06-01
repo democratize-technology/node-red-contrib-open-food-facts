@@ -1,5 +1,7 @@
 # Claude Memory for node-red-contrib-open-food-facts
 
+@.claude/knowledge-graph.md
+
 ## Pull Request Guidelines
 
 - **Always tag `democratize-technology-code-reviewer` as reviewer** when creating pull requests
