@@ -12,18 +12,22 @@ permissions:
 jobs:
   review:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          fetch-depth: 0
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
       - name: PR Review
         uses: tmokmss/bedrock-pr-reviewer@v1
         env:
-          AWS_REGION: us-east-1
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          bedrock_heavy_model: anthropic.claude-3-5-sonnet-20241022-v2:0
+          bedrock_light_model: us.anthropic.claude-3-5-haiku-20241022-v1:0
+          bedrock_heavy_model: us.anthropic.claude-3-5-sonnet-20241022-v2:0
