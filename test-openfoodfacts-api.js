@@ -626,6 +626,255 @@ describe('OpenFoodFactsAPI', () => {
     });
   });
 
+  // Test Input Validation Methods
+  describe('Input Validation', () => {
+    test('should validate barcode format correctly', () => {
+      api = new OpenFoodFactsAPI();
+      
+      // Test valid barcodes
+      assert.doesNotThrow(() => api._validateBarcode('12345678'));
+      assert.doesNotThrow(() => api._validateBarcode('1234567890123'));
+      
+      // Test invalid barcodes - non-string
+      assert.throws(
+        () => api._validateBarcode(123456789),
+        { message: 'Barcode must be a string' }
+      );
+      
+      // Test invalid barcodes - wrong format
+      assert.throws(
+        () => api._validateBarcode('abc123'),
+        { message: 'Invalid barcode format. Must be 8-13 digits.' }
+      );
+      
+      // Test invalid barcodes - too short
+      assert.throws(
+        () => api._validateBarcode('1234567'),
+        { message: 'Invalid barcode format. Must be 8-13 digits.' }
+      );
+      
+      // Test invalid barcodes - too long
+      assert.throws(
+        () => api._validateBarcode('12345678901234'),
+        { message: 'Invalid barcode format. Must be 8-13 digits.' }
+      );
+    });
+
+    test('should validate partial barcodes for search', () => {
+      api = new OpenFoodFactsAPI();
+      
+      // Test valid partial barcodes
+      assert.doesNotThrow(() => api._validateBarcode('123', true));
+      assert.doesNotThrow(() => api._validateBarcode('123456', true));
+      
+      // Test invalid partial barcodes
+      assert.throws(
+        () => api._validateBarcode('abc', true),
+        { message: 'Invalid barcode format. Must contain only digits.' }
+      );
+      
+      assert.throws(
+        () => api._validateBarcode('', true),
+        { message: 'Invalid barcode format. Must contain only digits.' }
+      );
+    });
+
+    test('should validate image files correctly', () => {
+      api = new OpenFoodFactsAPI();
+      
+      // Test valid image files
+      const validJpeg = { type: 'image/jpeg', size: 1024 };
+      const validPng = { type: 'image/png', size: 2048 };
+      const validWebp = { type: 'image/webp', size: 4096 };
+      
+      assert.doesNotThrow(() => api._validateImageFile(validJpeg));
+      assert.doesNotThrow(() => api._validateImageFile(validPng));
+      assert.doesNotThrow(() => api._validateImageFile(validWebp));
+      
+      // Test null/undefined file
+      assert.throws(
+        () => api._validateImageFile(null),
+        { message: 'Image file is required' }
+      );
+      
+      assert.throws(
+        () => api._validateImageFile(undefined),
+        { message: 'Image file is required' }
+      );
+      
+      // Test invalid file type
+      const invalidFile = { type: 'text/plain', size: 1024 };
+      assert.throws(
+        () => api._validateImageFile(invalidFile),
+        { message: 'Invalid file type. Only JPEG, PNG, and WebP images are allowed.' }
+      );
+      
+      // Test oversized file
+      const largeFile = { type: 'image/jpeg', size: 11 * 1024 * 1024 };
+      assert.throws(
+        () => api._validateImageFile(largeFile),
+        { message: 'File size too large. Maximum size is 10MB.' }
+      );
+      
+      // Test mock objects (no type/size properties) - should not throw
+      const mockFile = {};
+      assert.doesNotThrow(() => api._validateImageFile(mockFile));
+    });
+
+    test('should sanitize search input correctly', () => {
+      api = new OpenFoodFactsAPI();
+      
+      // Test normal input
+      assert.strictEqual(api._sanitizeSearchInput('chocolate'), 'chocolate');
+      
+      // Test input with dangerous characters
+      assert.strictEqual(
+        api._sanitizeSearchInput('<script>alert("xss")</script>Chocolate'),
+        '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;Chocolate'
+      );
+      
+      // Test input with quotes and ampersands
+      assert.strictEqual(
+        api._sanitizeSearchInput('Ben & Jerry\'s "Chunky Monkey"'),
+        'Ben &amp; Jerry&#x27;s &quot;Chunky Monkey&quot;'
+      );
+      
+      // Test long input truncation
+      const longInput = 'a'.repeat(150);
+      const result = api._sanitizeSearchInput(longInput);
+      assert.strictEqual(result.length, 100);
+      
+      // Test whitespace trimming
+      assert.strictEqual(api._sanitizeSearchInput('  chocolate  '), 'chocolate');
+      
+      // Test non-string input
+      assert.throws(
+        () => api._sanitizeSearchInput(123),
+        { message: 'Search input must be a string' }
+      );
+    });
+
+    test('should create request headers correctly', () => {
+      api = new OpenFoodFactsAPI();
+      
+      const headers = api._createRequestHeaders();
+      assert.deepStrictEqual(headers, {
+        'User-Agent': 'node-red-contrib-open-food-facts/0.2.2'
+      });
+    });
+
+    test('should validate setCredentials input', () => {
+      api = new OpenFoodFactsAPI();
+      
+      // Test valid credentials
+      assert.doesNotThrow(() => api.setCredentials('user', 'pass'));
+      
+      // Test non-string inputs
+      assert.throws(
+        () => api.setCredentials(123, 'pass'),
+        { message: 'User ID and password must be strings' }
+      );
+      
+      assert.throws(
+        () => api.setCredentials('user', 456),
+        { message: 'User ID and password must be strings' }
+      );
+      
+      // Test empty inputs
+      assert.throws(
+        () => api.setCredentials('', 'pass'),
+        { message: 'User ID and password cannot be empty' }
+      );
+      
+      assert.throws(
+        () => api.setCredentials('user', ''),
+        { message: 'User ID and password cannot be empty' }
+      );
+      
+      // Test whitespace-only inputs
+      assert.throws(
+        () => api.setCredentials('   ', 'pass'),
+        { message: 'User ID and password cannot be empty' }
+      );
+      
+      assert.throws(
+        () => api.setCredentials('user', '   '),
+        { message: 'User ID and password cannot be empty' }
+      );
+    });
+  });
+
+  // Test Error Cases Integration
+  describe('Error Cases Integration', () => {
+    test('should reject invalid barcodes in getProduct', async () => {
+      api = new OpenFoodFactsAPI();
+      
+      await assert.rejects(
+        async () => await api.getProduct(123456789),
+        { message: 'Barcode must be a string' }
+      );
+      
+      await assert.rejects(
+        async () => await api.getProduct('abc123'),
+        { message: 'Invalid barcode format. Must be 8-13 digits.' }
+      );
+    });
+
+    test('should reject invalid barcodes in addProduct', async () => {
+      api = new OpenFoodFactsAPI();
+      api.setCredentials('user', 'pass');
+      
+      await assert.rejects(
+        async () => await api.addProduct({ code: 'invalid' }),
+        { message: 'Invalid barcode format. Must be 8-13 digits.' }
+      );
+    });
+
+    test('should reject invalid files in uploadPhoto', async () => {
+      api = new OpenFoodFactsAPI();
+      api.setCredentials('user', 'pass');
+      
+      // Test invalid file type
+      const invalidFile = { type: 'text/plain', size: 1024 };
+      await assert.rejects(
+        async () => await api.uploadPhoto('123456789', invalidFile, { field: 'front', languageCode: 'en' }),
+        { message: 'Invalid file type. Only JPEG, PNG, and WebP images are allowed.' }
+      );
+      
+      // Test oversized file
+      const largeFile = { type: 'image/jpeg', size: 11 * 1024 * 1024 };
+      await assert.rejects(
+        async () => await api.uploadPhoto('123456789', largeFile, { field: 'front', languageCode: 'en' }),
+        { message: 'File size too large. Maximum size is 10MB.' }
+      );
+      
+      // Test invalid field type
+      const validFile = { type: 'image/jpeg', size: 1024 };
+      await assert.rejects(
+        async () => await api.uploadPhoto('123456789', validFile, { field: 'invalid', languageCode: 'en' }),
+        { message: 'Invalid field type. Must be front, ingredients, or nutrition.' }
+      );
+      
+      // Test missing type parameter
+      await assert.rejects(
+        async () => await api.uploadPhoto('123456789', validFile, {}),
+        { message: 'Type with field and languageCode is required' }
+      );
+    });
+
+    test('should sanitize search inputs in searchProducts', async () => {
+      api = new OpenFoodFactsAPI();
+      mockSuccessResponse({ products: [] });
+      
+      await api.searchProducts({
+        search_terms: '<script>alert("xss")</script>Chocolate'
+      });
+      
+      const url = new URL(global.fetch.mock.calls[0].arguments[0]);
+      assert.strictEqual(url.searchParams.get('search_terms'), '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;Chocolate');
+    });
+  });
+
   // Test OpenFoodFactsError class
   describe('OpenFoodFactsError', () => {
     test('should create error with details and status', () => {
