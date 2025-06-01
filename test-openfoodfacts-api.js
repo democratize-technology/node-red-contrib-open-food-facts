@@ -63,6 +63,12 @@ describe('OpenFoodFactsAPI', () => {
     assert.strictEqual(api.baseUrl, 'https://custom.openfoodfacts.org');
   });
 
+  test('should reject HTTP URLs in constructor', () => {
+    assert.throws(() => {
+      new OpenFoodFactsAPI('http://insecure.openfoodfacts.org');
+    }, { message: 'HTTPS is required for secure API access. Use https:// URLs only.' });
+  });
+
   test('should set credentials', () => {
     api = new OpenFoodFactsAPI();
     api.setCredentials('username', 'password');
@@ -419,6 +425,20 @@ describe('OpenFoodFactsAPI', () => {
         { message: 'Failed to add product: Network error' },
       );
     });
+
+    test('should reject HTTP connections when adding products', async () => {
+      // Create API with mocked HTTP URL (bypass constructor validation for testing)
+      api = new OpenFoodFactsAPI();
+      api.baseUrl = 'http://insecure.openfoodfacts.org'; // Simulate HTTP URL
+      api.setCredentials('user', 'pass');
+
+      await assert.rejects(
+        async () => {
+          await api.addProduct({ code: '123456789' });
+        },
+        { message: 'Cannot send credentials over non-HTTPS connection. HTTPS is required for authenticated requests.' },
+      );
+    });
   });
 
   // Test uploadPhoto method
@@ -478,6 +498,20 @@ describe('OpenFoodFactsAPI', () => {
           await api.uploadPhoto('123456789', {}, { field: 'front', languageCode: 'en' });
         },
         { message: 'Failed to upload photo: Network error' },
+      );
+    });
+
+    test('should reject HTTP connections when uploading photos', async () => {
+      // Create API with mocked HTTP URL (bypass constructor validation for testing)
+      api = new OpenFoodFactsAPI();
+      api.baseUrl = 'http://insecure.openfoodfacts.org'; // Simulate HTTP URL
+      api.setCredentials('user', 'pass');
+
+      await assert.rejects(
+        async () => {
+          await api.uploadPhoto('123456789', {}, { field: 'front', languageCode: 'en' });
+        },
+        { message: 'Cannot send credentials over non-HTTPS connection. HTTPS is required for authenticated requests.' },
       );
     });
   });

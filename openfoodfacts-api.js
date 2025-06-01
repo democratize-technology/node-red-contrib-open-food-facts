@@ -32,15 +32,20 @@ class OpenFoodFactsError extends Error {
 class OpenFoodFactsAPI {
   /**
    * Creates an instance of OpenFoodFactsAPI
-   * @param {string} [baseUrl='https://world.openfoodfacts.org'] - Base URL for the API
+   * @param {string} [baseUrl='https://world.openfoodfacts.org'] - Base URL for the API (must use HTTPS for authenticated requests)
    */
   constructor(baseUrl = 'https://world.openfoodfacts.org') {
+    // Validate that baseUrl uses HTTPS for security
+    if (!baseUrl.startsWith('https://')) {
+      throw new Error('HTTPS is required for secure API access. Use https:// URLs only.');
+    }
     this.baseUrl = baseUrl;
     this.credentials = null;
   }
 
   /**
    * Sets user credentials for authenticated requests
+   * WARNING: Credentials will be sent over the network. Ensure you're using HTTPS.
    * @param {string} userId - Open Food Facts user ID
    * @param {string} password - Open Food Facts password
    */
@@ -121,6 +126,16 @@ class OpenFoodFactsAPI {
     return {
       'User-Agent': 'node-red-contrib-open-food-facts/0.2.2'
     };
+  }
+
+  /**
+   * Validates that the connection uses HTTPS before sending credentials
+   * @private
+   */
+  _validateSecureConnection() {
+    if (!this.baseUrl.startsWith('https://')) {
+      throw new Error('Cannot send credentials over non-HTTPS connection. HTTPS is required for authenticated requests.');
+    }
   }
 
   /**
@@ -293,6 +308,8 @@ class OpenFoodFactsAPI {
       throw new Error('Credentials required for adding products');
     }
     
+    // Ensure secure connection before sending credentials
+    this._validateSecureConnection();
     this._validateBarcode(data.code);
 
     try {
@@ -331,6 +348,8 @@ class OpenFoodFactsAPI {
       throw new Error('Credentials required for uploading photos');
     }
     
+    // Ensure secure connection before sending credentials
+    this._validateSecureConnection();
     this._validateBarcode(barcode);
     this._validateImageFile(image);
     
