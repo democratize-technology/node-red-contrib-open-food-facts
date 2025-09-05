@@ -219,7 +219,6 @@ class OpenFoodFactsAPI {
         quantity,
         serving_size,
         packaging,
-        // nutriments,
         storage_conditions,
         conservation_conditions,
         expiration_date_format,
@@ -234,7 +233,6 @@ class OpenFoodFactsAPI {
         quantity,
         serving_size,
         packaging,
-        // nutriments,
         storage_conditions,
         conservation_conditions,
         expiration_date_format,
@@ -313,9 +311,6 @@ class OpenFoodFactsAPI {
       // Handle pagination
       if (params.page) queryParams.append('page', params.page.toString());
       if (params.pageSize) queryParams.append('page_size', params.pageSize.toString());
-
-      // For debugging - consider enabling through an optional config parameter
-      // console.log(`${this.baseUrl}/cgi/search.pl?${queryParams.toString()}`);
 
       const response = await fetch(`${this.baseUrl}/cgi/search.pl?${queryParams.toString()}`);
       if (!response.ok) {
