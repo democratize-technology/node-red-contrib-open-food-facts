@@ -2,7 +2,8 @@ const { retry, handleType, ExponentialBackoff } = require('cockatiel');
 const { OpenFoodFactsAPI, OpenFoodFactsError } = require('./openfoodfacts-api');
 
 module.exports = function (RED) {
-  const client = new OpenFoodFactsAPI();
+  // SECURITY FIX: Removed shared client instance to prevent credential leakage
+  // Each node now creates its own isolated client instance
 
   /**
    * OFF getProduct node
@@ -10,6 +11,8 @@ module.exports = function (RED) {
   function OffGetProductNode(config) {
     RED.nodes.createNode(this, config);
     const node = this;
+    // Create isolated client instance per node
+    const client = new OpenFoodFactsAPI();
 
     node.on('input', async function (msg) {
       try {
@@ -34,6 +37,8 @@ module.exports = function (RED) {
   function OffSearchProductsNode(config) {
     RED.nodes.createNode(this, config);
     const node = this;
+    // Create isolated client instance per node
+    const client = new OpenFoodFactsAPI();
 
     node.on('input', async function (msg) {
       try {
@@ -62,6 +67,8 @@ module.exports = function (RED) {
   function OffGetTaxonomyNode(config) {
     RED.nodes.createNode(this, config);
     const node = this;
+    // Create isolated client instance per node
+    const client = new OpenFoodFactsAPI();
 
     node.on('input', async function (msg) {
       try {
@@ -86,6 +93,8 @@ module.exports = function (RED) {
   function OffAddProductNode(config) {
     RED.nodes.createNode(this, config);
     const node = this;
+    // Create isolated client instance per node - CRITICAL for credential isolation
+    const client = new OpenFoodFactsAPI();
 
     node.on('input', async function (msg) {
       const data = msg.payload || {};
@@ -96,7 +105,7 @@ module.exports = function (RED) {
         return;
       }
 
-      // Set credentials
+      // Set credentials on isolated instance only
       client.setCredentials(config.credentials.username, config.credentials.password);
 
       if (!data.code) {
@@ -125,6 +134,8 @@ module.exports = function (RED) {
   function OffUploadPhotoNode(config) {
     RED.nodes.createNode(this, config);
     const node = this;
+    // Create isolated client instance per node - CRITICAL for credential isolation
+    const client = new OpenFoodFactsAPI();
 
     node.on('input', async function (msg) {
       const { barcode, image, type } = msg.payload || {};
@@ -135,7 +146,7 @@ module.exports = function (RED) {
         return;
       }
 
-      // Set credentials
+      // Set credentials on isolated instance only
       client.setCredentials(config.credentials.username, config.credentials.password);
 
       if (!barcode || !image || !type || !type.field || !type.languageCode) {
@@ -164,6 +175,8 @@ module.exports = function (RED) {
   function OffGetAdditivesNode(config) {
     RED.nodes.createNode(this, config);
     const node = this;
+    // Create isolated client instance per node
+    const client = new OpenFoodFactsAPI();
 
     node.on('input', async function (msg) {
       try {
@@ -182,6 +195,8 @@ module.exports = function (RED) {
   function OffGetAllergensNode(config) {
     RED.nodes.createNode(this, config);
     const node = this;
+    // Create isolated client instance per node
+    const client = new OpenFoodFactsAPI();
 
     node.on('input', async function (msg) {
       try {
@@ -200,6 +215,8 @@ module.exports = function (RED) {
   function OffGetBrandsNode(config) {
     RED.nodes.createNode(this, config);
     const node = this;
+    // Create isolated client instance per node
+    const client = new OpenFoodFactsAPI();
 
     node.on('input', async function (msg) {
       try {
@@ -218,6 +235,8 @@ module.exports = function (RED) {
   function OffGetRandomInsightNode(config) {
     RED.nodes.createNode(this, config);
     const node = this;
+    // Create isolated client instance per node
+    const client = new OpenFoodFactsAPI();
 
     node.on('input', async function (msg) {
       const count = msg.payload?.count || config.count || 1;

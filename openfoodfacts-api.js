@@ -106,8 +106,27 @@ class OpenFoodFactsAPI {
     // Additional magic byte validation for enhanced security
     if (file.arrayBuffer && typeof file.arrayBuffer === 'function') {
       try {
-        const buffer = await file.arrayBuffer();
-        const bytes = new Uint8Array(buffer);
+        // PERFORMANCE OPTIMIZATION: Only read the first 16 bytes needed for magic byte validation
+        // instead of loading the entire file into memory. This significantly reduces memory usage
+        // and improves performance for large file uploads.
+        // - JPEG needs 3 bytes
+        // - PNG needs 4 bytes  
+        // - WebP needs 12 bytes (4 for RIFF + 4 skip + 4 for WEBP identifier)
+        const BYTES_TO_READ = 16; // Read 16 bytes to cover all formats with some buffer
+        
+        // For File API compatibility, we need to handle both slice() and arrayBuffer()
+        let bytes;
+        if (file.slice && typeof file.slice === 'function') {
+          // Modern File API - slice the first 16 bytes only
+          const slicedFile = file.slice(0, BYTES_TO_READ);
+          const buffer = await slicedFile.arrayBuffer();
+          bytes = new Uint8Array(buffer);
+        } else {
+          // Fallback for compatibility - read full buffer but only check first 16 bytes
+          // This path is for non-standard file objects that don't support slice()
+          const buffer = await file.arrayBuffer();
+          bytes = new Uint8Array(buffer).slice(0, BYTES_TO_READ);
+        }
         
         // Check magic bytes for known image formats
         const signatures = {
@@ -200,7 +219,6 @@ class OpenFoodFactsAPI {
         quantity,
         serving_size,
         packaging,
-        // nutriments,
         storage_conditions,
         conservation_conditions,
         expiration_date_format,
@@ -215,7 +233,6 @@ class OpenFoodFactsAPI {
         quantity,
         serving_size,
         packaging,
-        // nutriments,
         storage_conditions,
         conservation_conditions,
         expiration_date_format,
@@ -294,9 +311,6 @@ class OpenFoodFactsAPI {
       // Handle pagination
       if (params.page) queryParams.append('page', params.page.toString());
       if (params.pageSize) queryParams.append('page_size', params.pageSize.toString());
-
-      // For debugging - consider enabling through an optional config parameter
-      // console.log(`${this.baseUrl}/cgi/search.pl?${queryParams.toString()}`);
 
       const response = await fetch(`${this.baseUrl}/cgi/search.pl?${queryParams.toString()}`);
       if (!response.ok) {
