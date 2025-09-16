@@ -817,6 +817,91 @@ describe('OpenFoodFactsAPI', () => {
       await assert.doesNotReject(() => api._validateImageFile(fileWithoutArrayBuffer));
     });
 
+    test('should efficiently validate large files with slice optimization', async () => {
+      api = new OpenFoodFactsAPI();
+      
+      // Create a large buffer (5MB) but with valid JPEG magic bytes at the start
+      const largeBuffer = new Uint8Array(5 * 1024 * 1024);
+      // Set valid JPEG magic bytes at the beginning
+      largeBuffer[0] = 0xFF;
+      largeBuffer[1] = 0xD8;
+      largeBuffer[2] = 0xFF;
+      largeBuffer[3] = 0xE0;
+      
+      let sliceCalled = false;
+      let fullBufferRead = false;
+      
+      // Mock file with slice() support (modern File API)
+      const fileWithSlice = {
+        type: 'image/jpeg',
+        size: largeBuffer.length,
+        slice: function(start, end) {
+          sliceCalled = true;
+          // Verify we're only reading 16 bytes
+          assert.strictEqual(start, 0);
+          assert.strictEqual(end, 16);
+          
+          // Return a mock object that provides arrayBuffer for the sliced portion
+          return {
+            arrayBuffer: async () => {
+              // Only return the first 16 bytes
+              return largeBuffer.slice(start, end).buffer;
+            }
+          };
+        },
+        // This should NOT be called when slice is available
+        arrayBuffer: async () => {
+          fullBufferRead = true;
+          return largeBuffer.buffer;
+        }
+      };
+      
+      // Test that validation passes and uses slice
+      await assert.doesNotReject(() => api._validateImageFile(fileWithSlice));
+      assert.strictEqual(sliceCalled, true, 'slice() should be called for optimization');
+      assert.strictEqual(fullBufferRead, false, 'Full arrayBuffer should not be read when slice is available');
+      
+      // Test fallback when slice is not available
+      const fileWithoutSlice = {
+        type: 'image/jpeg',
+        size: 1024,
+        arrayBuffer: async () => {
+          const buffer = new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01]);
+          return buffer.buffer;
+        }
+      };
+      
+      await assert.doesNotReject(() => api._validateImageFile(fileWithoutSlice));
+      
+      // Test WebP with slice optimization
+      const webpBuffer = new Uint8Array(16);
+      // RIFF header
+      webpBuffer[0] = 0x52; // R
+      webpBuffer[1] = 0x49; // I
+      webpBuffer[2] = 0x46; // F
+      webpBuffer[3] = 0x46; // F
+      // File size (4 bytes) - not important for validation
+      webpBuffer[4] = 0x00;
+      webpBuffer[5] = 0x00;
+      webpBuffer[6] = 0x00;
+      webpBuffer[7] = 0x00;
+      // WEBP identifier
+      webpBuffer[8] = 0x57;  // W
+      webpBuffer[9] = 0x45;  // E
+      webpBuffer[10] = 0x42; // B
+      webpBuffer[11] = 0x50; // P
+      
+      const webpFileWithSlice = {
+        type: 'image/webp',
+        size: 100000,
+        slice: (start, end) => ({
+          arrayBuffer: async () => webpBuffer.slice(start, end).buffer
+        })
+      };
+      
+      await assert.doesNotReject(() => api._validateImageFile(webpFileWithSlice));
+    });
+
     test('should sanitize search input correctly', () => {
       api = new OpenFoodFactsAPI();
       
